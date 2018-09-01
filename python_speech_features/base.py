@@ -33,7 +33,7 @@ def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
     return feat
 
 def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
-          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,
+          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97, cb=lambda x:x,
           winfunc=lambda x:numpy.ones((x,))):
     """Compute Mel-filterbank energy features from an audio signal.
 
@@ -60,8 +60,7 @@ def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
     fb = get_filterbanks(nfilt,nfft,samplerate,lowfreq,highfreq)
     feat = numpy.dot(pspec,fb.T) # compute the filterbank energies
     feat = numpy.where(feat == 0,numpy.finfo(float).eps,feat) # if feat is zero, we get problems with log
-
-    return feat,energy
+    return feat,energy,cb(**locals())
 
 def logfbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
              nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,
