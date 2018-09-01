@@ -6,7 +6,7 @@ from python_speech_features import sigproc
 from scipy.fftpack import dct
 
 def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
-         nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,ceplifter=22,appendEnergy=True,
+         nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97,ceplifter=22,appendEnergy=True, cb=lambda x:x,
          winfunc=lambda x:numpy.ones((x,))):
     """Compute MFCC features from an audio signal.
 
@@ -25,15 +25,15 @@ def mfcc(signal,samplerate=16000,winlen=0.025,winstep=0.01,numcep=13,
     :param winfunc: the analysis window to apply to each frame. By default no window is applied. You can use numpy window functions here e.g. winfunc=numpy.hamming
     :returns: A numpy array of size (NUMFRAMES by numcep) containing features. Each row holds 1 feature vector.
     """
-    feat,energy = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph,winfunc)
+    feat,energy,opt = fbank(signal,samplerate,winlen,winstep,nfilt,nfft,lowfreq,highfreq,preemph,cb,winfunc)
     feat = numpy.log(feat)
     feat = dct(feat, type=2, axis=1, norm='ortho')[:,:numcep]
     feat = lifter(feat,ceplifter)
     if appendEnergy: feat[:,0] = numpy.log(energy) # replace first cepstral coefficient with log of frame energy
-    return feat
+    return feat,opt
 
 def fbank(signal,samplerate=16000,winlen=0.025,winstep=0.01,
-          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97, cb=lambda x:x,
+          nfilt=26,nfft=512,lowfreq=0,highfreq=None,preemph=0.97, cb=None,
           winfunc=lambda x:numpy.ones((x,))):
     """Compute Mel-filterbank energy features from an audio signal.
 
